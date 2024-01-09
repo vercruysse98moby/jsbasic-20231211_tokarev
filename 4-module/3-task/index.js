@@ -1,30 +1,42 @@
+const FIRST_COLUMN = 1;
+const SECOND_COLUMN = 2;
+const THIRD_COLUMN = 3;
+
 function highlight(table) {
-  for (let tr of table.children[1].rows) { 
-      let available = tr.cells[3];
-      if (available.hasAttribute("data-available"))
-          switch (available.dataset.available) {
-              case "true":
-                  tr.classList.add("available");
-                  break;
-              case "false":
-                  tr.classList.add("unavailable");
-          }
-      else  
-          tr.hidden = true;
-       
-      let gender = tr.cells[2].textContent;
-      switch (gender) {
-          case "m":
-              tr.classList.add("male");
-              break;
-          case "f":
-              tr.classList.add("female");
+  // ваш код...
+  const actions = {
+    [THIRD_COLUMN]: (root, td) => {
+      if (td.dataset.available === 'true') {
+        root.classList.toggle('available', true);
+      } else if (td.dataset.available === 'false') {
+        root.classList.toggle('unavailable', true);
+      } else if (!td.hasAttribute('data-available')) {
+        root.hidden = true;
       }
-     
-      let age = +tr.cells[1].textContent;
-      if (age < 18) tr.style.textDecoration = "line-through";
+    },
+    [SECOND_COLUMN]: (root, td) => {
+      if (td.textContent === 'm') {
+        root.classList.toggle('male', true);
+      } else if (td.textContent === 'f') {
+        root.classList.toggle('female', true);
+      }
+    },
+    [FIRST_COLUMN]: (root, td) => {
+      const age = parseInt(td.textContent, 10);
+
+      if (age < 18) {
+        root.style.textDecoration = 'line-through';
+      }
+    },
+  };
+
+  for (const tr of table.rows) {
+    Array.from(tr.cells).forEach((td, index) => {
+      const fn = actions[index];
+
+      if (typeof fn === 'function') {
+        fn(tr, td);
+      }
+    });
   }
 }
-
-let table = document.querySelector(".js-teachers");
-highlight(table);
